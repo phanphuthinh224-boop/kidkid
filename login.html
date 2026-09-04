@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Đăng nhập — QNOJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0A0F1E;--panel:#111A2E;--line:#233053;--text:#E9EDF8;--muted:#8C97B8;--ac:#34D399;--wa:#FB6B6B;}
+  *{box-sizing:border-box;} body{margin:0;background:var(--ink);color:var(--text);font-family:'Space Grotesk',sans-serif;
+    display:flex;align-items:center;justify-content:center;min-height:100vh;}
+  .card{width:380px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:32px;}
+  .logo{font-weight:700;font-size:18px;margin-bottom:6px;} .logo span{color:var(--ac);}
+  h1{font-size:20px;margin:0 0 22px;}
+  label{display:block;font-size:12.5px;color:var(--muted);margin:14px 0 6px;font-family:'JetBrains Mono',monospace;}
+  input{width:100%;padding:10px 12px;background:#0D1426;border:1px solid var(--line);border-radius:7px;color:var(--text);font-size:14px;}
+  input:focus{outline:none;border-color:var(--ac);}
+  button{width:100%;margin-top:22px;padding:11px;border:none;border-radius:7px;background:var(--ac);color:#06170F;font-weight:600;font-size:14.5px;cursor:pointer;}
+  button:disabled{opacity:.5;cursor:default;}
+  .msg{margin-top:14px;font-size:13px;font-family:'JetBrains Mono',monospace;}
+  .msg.err{color:var(--wa);} .msg.ok{color:var(--ac);}
+  .foot{margin-top:18px;font-size:13px;color:var(--muted);text-align:center;}
+  .foot a{color:var(--ac);}
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">QNOJ<span>.</span></div>
+    <h1>Đăng nhập</h1>
+    <form id="form">
+      <label>Email</label>
+      <input id="email" type="email" required>
+      <label>Mật khẩu</label>
+      <input id="password" type="password" required>
+      <button id="submitBtn" type="submit">Đăng nhập</button>
+      <div id="msg" class="msg"></div>
+    </form>
+    <div class="foot">Chưa có tài khoản? <a href="register.html">Đăng ký</a></div>
+  </div>
+
+<script type="module">
+  import { supabase } from './js/supabaseClient.js';
+
+  const form = document.getElementById('form');
+  const msg = document.getElementById('msg');
+  const btn = document.getElementById('submitBtn');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    btn.disabled = true;
+    msg.textContent = '';
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    btn.disabled = false;
+    if (error) {
+      msg.textContent = error.message;
+      msg.className = 'msg err';
+    } else {
+      window.location.href = 'problems.html';
+    }
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Danh sách bài — QNOJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0A0F1E;--panel:#111A2E;--panel-2:#141F38;--line:#233053;--text:#E9EDF8;--muted:#8C97B8;
+    --ac:#34D399;--wa:#FB6B6B;--gold:#F2B84B;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--ink);color:var(--text);font-family:'Space Grotesk',sans-serif;}
+  .wrap{max-width:920px;margin:0 auto;padding:40px 24px 80px;}
+  header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .logo{font-weight:700;font-size:18px;} .logo a{color:var(--text);} .logo span{color:var(--ac);}
+  .navauth a{font-size:13.5px;color:var(--muted);margin-left:16px;}
+  h1{font-size:26px;margin:26px 0 20px;}
+  .toolbar{display:flex;gap:12px;margin-bottom:22px;}
+  select, input{
+    background:var(--panel);border:1px solid var(--line);border-radius:7px;color:var(--text);
+    padding:9px 12px;font-family:'JetBrains Mono',monospace;font-size:13px;
+  }
+  select:focus, input:focus{outline:none;border-color:var(--ac);}
+  table{width:100%;border-collapse:collapse;}
+  th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);
+     padding:10px 12px;border-bottom:1px solid var(--line);}
+  td{padding:14px 12px;border-bottom:1px solid #1A2440;font-size:14.5px;}
+  tr:hover td{background:var(--panel-2);}
+  td a{color:var(--text);font-weight:600;}
+  td a:hover{color:var(--ac);}
+  .cat-tag{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);
+    border:1px solid var(--line);padding:2px 8px;border-radius:20px;}
+  .diff{font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:2px 8px;border-radius:20px;}
+  .diff.easy{color:var(--ac);border:1px solid #1E8F6E;}
+  .diff.medium{color:var(--gold);border:1px solid #7A5C22;}
+  .diff.hard{color:var(--wa);border:1px solid #7A3030;}
+  .empty{color:var(--muted);padding:40px 0;text-align:center;font-family:'JetBrains Mono',monospace;font-size:13px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><a href="index.html">QNOJ<span>.</span></a></div>
+    <div class="navauth" id="navauth"></div>
+  </header>
+  <h1>Danh sách bài</h1>
+  <div class="toolbar">
+    <select id="categoryFilter"><option value="">Tất cả chuyên đề</option></select>
+    <select id="difficultyFilter">
+      <option value="">Tất cả độ khó</option>
+      <option value="easy">Dễ</option>
+      <option value="medium">Trung bình</option>
+      <option value="hard">Khó</option>
+    </select>
+  </div>
+  <table>
+    <thead><tr><th>Bài</th><th>Chuyên đề</th><th>Độ khó</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div id="empty" class="empty" style="display:none;">Không có bài nào khớp bộ lọc.</div>
+</div>
+
+<script type="module">
+  import { supabase, requireProfile } from './js/supabaseClient.js';
+
+  const navauth = document.getElementById('navauth');
+  const profile = await requireProfile();
+  navauth.innerHTML = profile
+    ? `<a href="admin.html" style="${['admin','owner'].includes(profile.role)?'':'display:none'}">Quản trị</a>
+       <a href="#" id="logoutBtn">Đăng xuất (${profile.username})</a>`
+    : `<a href="login.html">Đăng nhập</a> <a href="register.html">Đăng ký</a>`;
+  document.getElementById('logoutBtn')?.addEventListener('click', async (e) => {
+    e.preventDefault();
+    await supabase.auth.signOut();
+    location.reload();
+  });
+
+  const catSelect = document.getElementById('categoryFilter');
+  const diffSelect = document.getElementById('difficultyFilter');
+  const rows = document.getElementById('rows');
+  const emptyMsg = document.getElementById('empty');
+
+  const { data: categories } = await supabase.from('categories').select('*').order('name');
+  (categories ?? []).forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c.id; opt.textContent = c.name;
+    catSelect.appendChild(opt);
+  });
+
+  const diffLabel = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó' };
+
+  async function loadProblems() {
+    let query = supabase.from('problems').select('id, title, difficulty, categories(name)').order('id');
+    if (catSelect.value) query = query.eq('category_id', catSelect.value);
+    if (diffSelect.value) query = query.eq('difficulty', diffSelect.value);
+    const { data, error } = await query;
+
+    rows.innerHTML = '';
+    if (error || !data || data.length === 0) {
+      emptyMsg.style.display = 'block';
+      return;
+    }
+    emptyMsg.style.display = 'none';
+    data.forEach(p => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><a href="problem.html?id=${p.id}">${p.title}</a></td>
+        <td>${p.categories ? `<span class="cat-tag">${p.categories.name}</span>` : ''}</td>
+        <td><span class="diff ${p.difficulty}">${diffLabel[p.difficulty] ?? p.difficulty}</span></td>`;
+      rows.appendChild(tr);
+    });
+  }
+
+  catSelect.addEventListener('change', loadProblems);
+  diffSelect.addEventListener('change', loadProblems);
+  loadProblems();
+</script>
+</body>
+</html>

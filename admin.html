@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị — QNOJ</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#0A0F1E;--panel:#111A2E;--panel-2:#141F38;--line:#233053;--text:#E9EDF8;--muted:#8C97B8;
+    --ac:#34D399;--wa:#FB6B6B;--gold:#F2B84B;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--ink);color:var(--text);font-family:'Space Grotesk',sans-serif;}
+  .wrap{max-width:880px;margin:0 auto;padding:40px 24px 90px;}
+  .logo a{font-weight:700;font-size:18px;color:var(--text);} .logo span{color:var(--ac);}
+  h1{font-size:26px;margin:26px 0 30px;}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;margin-bottom:24px;}
+  .card h2{font-size:16px;margin-bottom:16px;}
+  label{display:block;font-size:12px;color:var(--muted);margin:12px 0 6px;font-family:'JetBrains Mono',monospace;}
+  input, select, textarea{
+    width:100%;background:#0D1426;border:1px solid var(--line);border-radius:7px;color:var(--text);
+    padding:9px 12px;font-size:13.5px;font-family:'Space Grotesk',sans-serif;
+  }
+  textarea{font-family:'JetBrains Mono',monospace;min-height:90px;resize:vertical;}
+  input:focus, select:focus, textarea:focus{outline:none;border-color:var(--ac);}
+  .row{display:flex;gap:12px;}
+  .row > *{flex:1;}
+  .checkline{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:var(--muted);}
+  .checkline input{width:auto;}
+  button{margin-top:16px;padding:9px 20px;border:none;border-radius:7px;background:var(--ac);color:#06170F;
+    font-weight:600;font-size:13.5px;cursor:pointer;}
+  .msg{margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:12.5px;}
+  .msg.ok{color:var(--ac);} .msg.err{color:var(--wa);}
+  table{width:100%;border-collapse:collapse;margin-top:8px;}
+  th{text-align:left;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);padding:8px;border-bottom:1px solid var(--line);}
+  td{padding:10px 8px;border-bottom:1px solid #1A2440;font-size:13.5px;}
+  .role-tag{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 8px;border-radius:20px;border:1px solid var(--line);}
+  .role-tag.owner{color:var(--gold);border-color:#7A5C22;} .role-tag.admin{color:var(--ac);border-color:#1E8F6E;}
+  .promoteBtn{margin:0;padding:5px 12px;font-size:12px;}
+  .denied{padding:80px 0;text-align:center;color:var(--muted);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo"><a href="index.html">QNOJ<span>.</span></a></div>
+  <div id="app"></div>
+</div>
+
+<script type="module">
+  import { supabase, requireProfile } from './js/supabaseClient.js';
+
+  const app = document.getElementById('app');
+  const profile = await requireProfile();
+
+  if (!profile || !['admin','owner'].includes(profile.role)) {
+    app.innerHTML = `<div class="denied">Bạn cần quyền admin để xem trang này. <a href="login.html" style="color:var(--ac)">Đăng nhập</a></div>`;
+  } else {
+    app.innerHTML = `
+      <h1>Trang quản trị <span style="font-size:13px;color:var(--muted);font-weight:400;">(${profile.username} · ${profile.role})</span></h1>
+
+      <div class="card">
+        <h2>Thêm chuyên đề</h2>
+        <label>Tên chuyên đề</label>
+        <input id="catName" placeholder="vd: Quy hoạch động">
+        <button id="addCatBtn">Thêm</button>
+        <div class="msg" id="catMsg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Thêm bài tập</h2>
+        <label>Tiêu đề</label>
+        <input id="probTitle">
+        <label>Mô tả đề bài</label>
+        <textarea id="probDesc" style="font-family:'Space Grotesk',sans-serif;min-height:140px;"></textarea>
+        <div class="row">
+          <div><label>Chuyên đề</label><select id="probCat"></select></div>
+          <div><label>Độ khó</label>
+            <select id="probDiff"><option value="easy">Dễ</option><option value="medium" selected>Trung bình</option><option value="hard">Khó</option></select>
+          </div>
+        </div>
+        <div class="row">
+          <div><label>Giới hạn thời gian (ms)</label><input id="probTime" type="number" value="1000"></div>
+          <div><label>Giới hạn bộ nhớ (KB)</label><input id="probMem" type="number" value="262144"></div>
+        </div>
+        <button id="addProbBtn">Thêm bài</button>
+        <div class="msg" id="probMsg"></div>
+      </div>
+
+      <div class="card">
+        <h2>Thêm test case</h2>
+        <label>Bài tập</label>
+        <select id="tcProb"></select>
+        <label>Input</label>
+        <textarea id="tcInput"></textarea>
+        <label>Expected output</label>
+        <textarea id="tcOutput"></textarea>
+        <label>Vị trí (thứ tự chấm)</label>
+        <input id="tcPos" type="number" value="1">
+        <div class="checkline"><input id="tcSample" type="checkbox"> <label style="margin:0;">Test mẫu (hiển thị công khai cho học sinh)</label></div>
+        <button id="addTcBtn">Thêm test case</button>
+        <div class="msg" id="tcMsg"></div>
+      </div>
+
+      ${profile.role === 'owner' ? `
+      <div class="card">
+        <h2>Cấp quyền admin (chỉ owner)</h2>
+        <table><thead><tr><th>Username</th><th>Quyền hiện tại</th><th></th></tr></thead>
+        <tbody id="userRows"></tbody></table>
+        <div class="msg" id="promoteMsg"></div>
+      </div>` : ''}
+    `;
+
+    // ---- populate category dropdowns ----
+    async function loadCategoriesInto(selectEl) {
+      const { data } = await supabase.from('categories').select('*').order('name');
+      selectEl.innerHTML = (data ?? []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+    }
+    await loadCategoriesInto(document.getElementById('probCat'));
+
+    async function loadProblemsInto(selectEl) {
+      const { data } = await supabase.from('problems').select('id, title').order('id');
+      selectEl.innerHTML = (data ?? []).map(p => `<option value="${p.id}">${p.title}</option>`).join('');
+    }
+    await loadProblemsInto(document.getElementById('tcProb'));
+
+    // ---- add category ----
+    document.getElementById('addCatBtn').addEventListener('click', async () => {
+      const name = document.getElementById('catName').value.trim();
+      const msg = document.getElementById('catMsg');
+      if (!name) return;
+      const { error } = await supabase.from('categories').insert({ name });
+      msg.textContent = error ? error.message : 'Đã thêm.';
+      msg.className = `msg ${error ? 'err' : 'ok'}`;
+      if (!error) {
+        document.getElementById('catName').value = '';
+        await loadCategoriesInto(document.getElementById('probCat'));
+      }
+    });
+
+    // ---- add problem ----
+    document.getElementById('addProbBtn').addEventListener('click', async () => {
+      const msg = document.getElementById('probMsg');
+      const payload = {
+        title: document.getElementById('probTitle').value.trim(),
+        description: document.getElementById('probDesc').value.trim(),
+        category_id: document.getElementById('probCat').value || null,
+        difficulty: document.getElementById('probDiff').value,
+        time_limit_ms: parseInt(document.getElementById('probTime').value, 10),
+        memory_limit_kb: parseInt(document.getElementById('probMem').value, 10),
+        created_by: profile.id,
+      };
+      if (!payload.title || !payload.description) { msg.textContent = 'Cần nhập tiêu đề và mô tả.'; msg.className = 'msg err'; return; }
+      const { error } = await supabase.from('problems').insert(payload);
+      msg.textContent = error ? error.message : 'Đã thêm bài tập.';
+      msg.className = `msg ${error ? 'err' : 'ok'}`;
+      if (!error) await loadProblemsInto(document.getElementById('tcProb'));
+    });
+
+    // ---- add test case ----
+    document.getElementById('addTcBtn').addEventListener('click', async () => {
+      const msg = document.getElementById('tcMsg');
+      const payload = {
+        problem_id: document.getElementById('tcProb').value,
+        input: document.getElementById('tcInput').value,
+        expected_output: document.getElementById('tcOutput').value,
+        position: parseInt(document.getElementById('tcPos').value, 10),
+        is_sample: document.getElementById('tcSample').checked,
+      };
+      const { error } = await supabase.from('test_cases').insert(payload);
+      msg.textContent = error ? error.message : 'Đã thêm test case.';
+      msg.className = `msg ${error ? 'err' : 'ok'}`;
+    });
+
+    // ---- owner: promote users ----
+    if (profile.role === 'owner') {
+      const { data: users } = await supabase.from('profiles').select('*').order('username');
+      const rowsEl = document.getElementById('userRows');
+      rowsEl.innerHTML = (users ?? []).map(u => `
+        <tr>
+          <td>${u.username}</td>
+          <td><span class="role-tag ${u.role}">${u.role}</span></td>
+          <td>${u.role === 'user'
+            ? `<button class="promoteBtn" data-id="${u.id}" data-role="admin">Cấp quyền admin</button>`
+            : u.role === 'admin'
+              ? `<button class="promoteBtn" data-id="${u.id}" data-role="user">Thu hồi quyền</button>`
+              : ''}</td>
+        </tr>`).join('');
+
+      rowsEl.querySelectorAll('.promoteBtn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const { error } = await supabase.rpc('promote_user', { target_id: btn.dataset.id, new_role: btn.dataset.role });
+          const msg = document.getElementById('promoteMsg');
+          msg.textContent = error ? error.message : 'Đã cập nhật quyền.';
+          msg.className = `msg ${error ? 'err' : 'ok'}`;
+          if (!error) location.reload();
+        });
+      });
+    }
+  }
+</script>
+</body>
+</html>
