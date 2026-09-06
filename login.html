@@ -51,16 +51,28 @@
     const email = document.getElementById('email').value.trim();
     const password = document.getElementById('password').value;
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
     btn.disabled = false;
     if (error) {
       msg.textContent = error.message;
       msg.className = 'msg err';
     } else {
-      window.location.href = 'problems.html';
+      // Lấy thông tin role từ bảng profiles để điều hướng
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', data.user.id)
+        .single();
+
+      if (profile && profile.role === 'admin') {
+        window.location.href = 'admin.html';
+      } else {
+        window.location.href = 'problems.html';
+      }
     }
   });
+</script>
 </script>
 </body>
 </html>
