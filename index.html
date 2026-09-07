@@ -20,10 +20,10 @@
     /* NAV */
     #navbar{position:sticky;top:0;z-index:50;background:rgba(10,15,30,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line-soft);}
     nav.nav-bar{display:flex;align-items:center;justify-content:space-between;height:72px;}
-    .logo{font-weight:700;font-size:19px;display:flex;align-items:center;gap:8px;}
+    .logo{font-weight:700;font-size:19px;display:flex;align-items:center;gap:8px;color:var(--text);text-decoration:none;}
     .logo::before{content:"";width:8px;height:8px;background:var(--ac);border-radius:2px;}
     .nav-links{display:flex;gap:12px;}
-    .nav-links a{color:var(--muted);text-decoration:none;font-size:14.5px;padding:6px 12px;}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:14.5px;padding:6px 12px;transition:color 0.2s;}
     .nav-links a:hover{color:var(--text);}
     
     /* HERO */
@@ -62,10 +62,11 @@
       <nav class="nav-bar">
         <a href="#" class="logo">QNOJ</a>
         <div class="nav-links">
-          <a href="#features">Tính năng</a>
-          <a href="#problems">Bài tập</a>
-          <a href="#contests">Kỳ thi</a>
-          <a href="#ranking">Bảng xếp hạng</a>
+          <a href="#problems">BÀI TẬP</a>
+          <a href="#submissions">BÀI NỘP</a>
+          <a href="#users">NGƯỜI DÙNG</a>
+          <a href="#contests">KỲ THI</a>
+          <a href="#about">GIỚI THIỆU</a>
         </div>
       </nav>
     </div>
@@ -127,8 +128,26 @@
   <section id="problems">
     <div class="wrap">
       <div class="sec-kicker">// kho bài tập</div>
-      <h2 class="sec-title">Danh sách bài tập mới nhất</h2>
+      <h2 class="sec-title">Danh sách bài tập (Problems)</h2>
       <p style="margin-top:12px; color:var(--muted);">Đang cập nhật danh sách bài tập từ hệ thống...</p>
+    </div>
+  </section>
+
+  <!-- SUBMISSIONS -->
+  <section id="submissions">
+    <div class="wrap">
+      <div class="sec-kicker">// chấm bài</div>
+      <h2 class="sec-title">Bài nộp gần đây (Submissions)</h2>
+      <p style="margin-top:12px; color:var(--muted);">Chưa có dữ liệu bài nộp mới.</p>
+    </div>
+  </section>
+
+  <!-- USERS -->
+  <section id="users">
+    <div class="wrap">
+      <div class="sec-kicker">// cộng đồng</div>
+      <h2 class="sec-title">Danh sách người dùng (Users)</h2>
+      <p style="margin-top:12px; color:var(--muted);">Đang cập nhật bảng xếp hạng và danh sách thành viên...</p>
     </div>
   </section>
 
@@ -136,8 +155,19 @@
   <section id="contests">
     <div class="wrap">
       <div class="sec-kicker">// kỳ thi</div>
-      <h2 class="sec-title">Kỳ thi sắp diễn ra</h2>
+      <h2 class="sec-title">Kỳ thi sắp diễn ra (Contests)</h2>
       <p style="margin-top:12px; color:var(--muted);">Vòng loại HSG Tin học Quảng Ngãi 2026.</p>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="wrap">
+      <div class="sec-kicker">// giới thiệu</div>
+      <h2 class="sec-title">Về QNOJ (About)</h2>
+      <p style="margin-top:12px; color:var(--muted); max-width: 600px; line-height: 1.6;">
+        QNOJ (Quảng Ngãi Online Judge) là hệ thống chấm bài tự động phục vụ công tác giảng dạy, ôn luyện và tổ chức các kỳ thi học sinh giỏi Tin học trên địa bàn tỉnh Quảng Ngãi.
+      </p>
     </div>
   </section>
 
