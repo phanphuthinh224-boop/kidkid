@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Trang cá nhân — QNOJ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="navbar"></div>
+
+  <div class="wrap" style="max-width: 600px; margin: 40px auto; padding: 20px; background: #16213e; border-radius: 12px; text-align: center;">
+    <img id="avatarImg" src="https://via.placeholder.com/120" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #4ecca3;" />
+    <h2 id="usernameTxt" style="color: #fff; margin-top: 12px;">Loading...</h2>
+    <p id="roleTxt" style="color: #888; font-size: 14px;">User</p>
+
+    <!-- Khung Upload Avatar (Chỉ hiện khi là chủ tài khoản) -->
+    <div id="uploadSection" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 1px solid #333;">
+      <label style="color: #aaa; display: block; margin-bottom: 8px;">Thay đổi ảnh đại diện:</label>
+      <input type="file" id="avatarInput" accept="image/*" style="margin-bottom: 12px; color: #ccc;">
+      <br>
+      <button id="uploadBtn" style="padding: 8px 16px; background: #4ecca3; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">Tải ảnh lên</button>
+      <p id="msg" style="margin-top: 8px; font-size: 13px;"></p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { supabase } from './js/supabaseClient.js';
+    import { renderNavbar } from './js/navbar.js';
+
+    renderNavbar();
+
+    const params = new URLSearchParams(window.location.search);
+    const profileId = params.get('id');
+
+    async function loadProfile() {
+      const { data: { session } } = await supabase.auth.getSession();
+      const currentUser = session?.user;
+
+      // Nếu không có ID trên URL, tự lấy ID của người đang đăng nhập
+      const targetId = profileId || currentUser?.id;
+
+      if (!targetId) {
+        window.location.href = 'login.html';
+        return;
+      }
+
+      // Lấy thông tin profile
+      const { data: profile } = await supabase.from('profiles').select('*').eq('id', targetId).maybeSingle();
+
+      if (profile) {
+        document.getElementById('usernameTxt').textContent = profile.username || 'User';
+        document.getElementById('roleTxt').textContent = 'Vai trò: ' + (profile.role || 'user');
+        if (profile.avatar_url) document.getElementById('avatarImg').src = profile.avatar_url;
+      }
+
+      // KIỂM TRA CHÍNH CHỦ: Chỉ hiện nút sửa ảnh nếu currentUser.id === targetId
+      if (currentUser && currentUser.id === targetId) {
+        document.getElementById('uploadSection').style.display = 'block';
+      }
+    }
+
+    // Xử lý Upload Avatar lên Supabase Storage
+    document.getElementById('uploadBtn')?.addEventListener('click', async () => {
+      const fileInput = document.getElementById('avatarInput');
+      const msg = document.getElementById('msg');
+      const file = fileInput.files[0];
+
+      if (!file) return alert('Vui lòng chọn 1 hình ảnh!');
+
+      msg.textContent = 'Đang tải ảnh lên...';
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session.user.id;
+
+      const filePath = `avatars/${userId}_${Date.now()}.png`;
+
+      // 1. Upload lên Bucket avatars
+      const { error: uploadError } = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+
+      if (uploadError) {
+        msg.textContent = 'Lỗi tải ảnh: ' + uploadError.message;
+        msg.style.color = 'red';
+        return;
+      }
+
+      // 2. Lấy URL Public
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(filePath);
+
+      // 3. Cập nhật avatar_url vào bảng profiles
+      await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
+
+      msg.textContent = 'Cập nhật avatar thành công!';
+      msg.style.color = 'green';
+      document.getElementById('avatarImg').src = publicUrl;
+    });
+
+    loadProfile();
+  </script>
+</body>
+</html>
