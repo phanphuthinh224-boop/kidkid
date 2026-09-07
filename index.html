@@ -42,24 +42,38 @@
 
   .wrap{max-width:1180px;margin:0 auto;padding:0 32px;}
 
-  /* ---------- NAV ---------- */
-  header{
+  /* ---------- STYLES CHO NAVBAR ĐỘNG ---------- */
+  #navbar {
     position:sticky;top:0;z-index:50;
     background:rgba(10,15,30,0.78);
     backdrop-filter:blur(14px);
     border-bottom:1px solid var(--line-soft);
   }
-  nav.wrap{display:flex;align-items:center;justify-content:space-between;height:72px;}
+  nav.nav-bar{display:flex;align-items:center;justify-content:space-between;height:72px;max-width:1180px;margin:0 auto;padding:0 32px;}
   .logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;letter-spacing:0.01em;}
-  .logo .dot{width:9px;height:9px;border-radius:2px;background:var(--ac);box-shadow:0 0 14px var(--ac);}
-  .navlinks{display:flex;gap:2px;align-items:center;}
-  .navlinks a{
+  .logo::before{content:"";width:9px;height:9px;border-radius:2px;background:var(--ac);box-shadow:0 0 14px var(--ac);}
+  .nav-links{display:flex;gap:2px;align-items:center;}
+  .nav-links a{
     font-size:14.5px;color:var(--muted);padding:9px 14px;border-radius:6px;
     transition:color .18s ease, background .18s ease;
   }
-  .navlinks a:hover{color:var(--text);background:var(--panel-2);}
-  .navlinks a.active{color:var(--text);}
-  .navauth{display:flex;gap:10px;align-items:center;}
+  .nav-links a:hover{color:var(--text);background:var(--panel-2);}
+  .nav-links a.admin-link{color:var(--gold);font-weight:600;}
+  .nav-user{display:flex;gap:12px;align-items:center;}
+  .user-info{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;}
+  .avatar-sm{width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid var(--ac);}
+  .btn-logout{
+    font-family:var(--font-display);
+    font-size:13px;font-weight:600;
+    padding:7px 14px;border-radius:6px;
+    background:transparent;
+    color:var(--wa);
+    border:1px solid rgba(251,107,107,0.3);
+    cursor:pointer;
+    transition:background .15s ease;
+  }
+  .btn-logout:hover{background:rgba(251,107,107,0.15);}
+
   .btn{
     font-family:var(--font-display);
     font-size:14px;font-weight:600;
@@ -73,7 +87,6 @@
   .btn-ghost:hover{border-color:var(--muted-2);background:var(--panel-2);}
   .btn-solid{background:var(--ac);color:#06170F;}
   .btn-solid:hover{transform:translateY(-1px);background:#3FE3AC;}
-  .navmobile{display:none;}
 
   /* ---------- HERO ---------- */
   .hero{
@@ -293,7 +306,7 @@
 
   /* ---------- RESPONSIVE ---------- */
   @media (max-width:920px){
-    .navlinks{display:none;}
+    .nav-links{display:none;}
     .hero .wrap{grid-template-columns:1fr;}
     #hero-canvas{opacity:0.35;}
     .feat-grid{grid-template-columns:repeat(2,1fr);}
@@ -314,24 +327,8 @@
 </head>
 <body>
 
-<header>
-  <nav class="wrap">
-    <div class="logo"><span class="dot"></span>QNOJ</div>
-    <div class="navlinks">
-      <a href="#" class="active">Trang chủ</a>
-      <a href="problems.html">Danh sách bài</a>
-      <a href="#">Các bài nộp</a>
-      <a href="#ranking">Xếp hạng</a>
-      <a href="#contests">Kỳ thi</a>
-      <a href="#">Tổ chức</a>
-      <a href="#news">Thông tin</a>
-    </div>
-    <div class="navauth">
-      <a class="btn btn-ghost" href="login.html">Đăng nhập</a>
-      <a class="btn btn-solid" href="register.html">Đăng ký</a>
-    </div>
-  </nav>
-</header>
+<!-- KHUNG CHỨA NAVBAR TỰ ĐỘNG -->
+<div id="navbar"></div>
 
 <section class="hero">
   <canvas id="hero-canvas"></canvas>
@@ -497,7 +494,7 @@
       <div class="mono">[ chưa có bài viết ]</div>
       <h4>Chưa có tin tức nào</h4>
       <p>Đăng ký tài khoản để nhận thông báo ngay khi có kỳ thi mới hoặc bài viết hướng dẫn được đăng.</p>
-      <a href="#" class="btn btn-ghost">Đăng ký nhận tin</a>
+      <a href="register.html" class="btn btn-ghost">Đăng ký nhận tin</a>
     </div>
   </div>
 </section>
@@ -506,26 +503,26 @@
   <div class="wrap">
     <div class="foot-grid">
       <div class="foot-brand">
-        <div class="logo"><span class="dot"></span>QNOJ</div>
+        <div class="logo">QNOJ</div>
         <p>Hệ thống chấm bài trực tuyến dành cho học sinh Quảng Ngãi luyện tập thuật toán và tranh tài trong các kỳ thi lập trình.</p>
       </div>
       <div class="foot-col">
         <h5>ĐIỀU HƯỚNG</h5>
-        <a href="#problems">Danh sách bài</a>
+        <a href="problems.html">Danh sách bài</a>
         <a href="#">Các bài nộp</a>
         <a href="#ranking">Xếp hạng</a>
         <a href="#contests">Kỳ thi</a>
       </div>
       <div class="foot-col">
         <h5>CỘNG ĐỒNG</h5>
-        <a href="#">Tổ chức</a>
+        <a href="users.html">Tổ chức / Thí sinh</a>
         <a href="#news">Thông tin</a>
         <a href="https://www.facebook.com/people/QNOJ-Qu%E1%BA%A3ng-Ng%C3%A3i-Online-Judge/61591717839199/">Facebook</a>
       </div>
       <div class="foot-col">
         <h5>TÀI KHOẢN</h5>
-        <a href="#">Đăng nhập</a>
-        <a href="#">Đăng ký</a>
+        <a href="login.html">Đăng nhập</a>
+        <a href="register.html">Đăng ký</a>
       </div>
     </div>
     <div class="foot-bottom">
@@ -534,6 +531,12 @@
     </div>
   </div>
 </footer>
+
+<!-- SCRIPT RENDER NAVBAR ĐỘNG -->
+<script type="module">
+  import { renderNavbar } from './js/navbar.js';
+  renderNavbar();
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
@@ -566,7 +569,6 @@
   const mesh2 = new THREE.LineSegments(wire2, mat2);
   group.add(mesh2);
 
-  // points at icosahedron vertices
   const ptsMat = new THREE.PointsMaterial({color:0x34D399, size:0.06});
   const pts = new THREE.Points(geo, ptsMat);
   group.add(pts);
@@ -628,7 +630,6 @@
   let i = 0;
   function typeChar(){
     if(i <= code.length){
-      // reveal by html-safe chunks (tag-aware)
       codeEl.innerHTML = code.slice(0, i).replace(/<(?!\/?(span|br)\b)[^>]*>?$/,'');
       i += 3;
       setTimeout(typeChar, 12);
